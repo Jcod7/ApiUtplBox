@@ -4,6 +4,8 @@ const logger = require("firebase-functions/logger");
 const express = require('express');
 const admin = require('firebase-admin');
 const cors = require('cors'); // Importar cors
+import axios from 'axios';
+
 
 const app = express();
 const serviceAccount = require("./authinventario.json");
@@ -19,6 +21,16 @@ app.use(cors()); // Permite solicitudes desde cualquier origen
 app.get('/hello-world', (req, res) => {
   return res.status(200).json({ message: 'Hello world' });
 });
+
+//Solicitud a la API
+const fetchData = async () => {
+  try {
+      const response = await axios.get('http://localhost:5000/api/data');
+      setData(response.data);
+  } catch (error) {
+      console.error(error);
+  }
+};
 
 app.get('/componentes', async (req, res) => {
   try {
@@ -208,25 +220,276 @@ app.get('/pedidos-con-componentes', async (req, res) => {
 
 // agrega documentos a la colección Componente
 
-app.post('/components', async (req, res) => {
+app.put('/components', async (req, res) => {
+  const componentsList = req.body;
+  // Validación (similar a tu código original)
+  try {
+    const batch = db.batch();
+
+    componentsList.forEach(component => {
+      const docRef = db.collection('Componente').doc();
+      batch.set(docRef, component);
+    });
+    await batch.commit();
+
+    res.status(201).json({ message: 'Componentes actualizados correctamente' });
+  } catch (error) {
+    console.error('Error al actualizar el componente:', error);
+    res.status(500).json({ error: 'Error al actualizar el componente' });
+  }
+});
+
+app.post('/almacen', async (req, res) => {
+  const almacen = req.body;
+  // Validación (similar a tu código original)
+  try {
+    const batch = db.batch();
+
+    almacen.forEach(almacen => {
+      const docRef = db.collection('Almacen').doc();
+      batch.set(docRef, almacen);
+    });
+
+    await batch.commit();
+
+    res.status(201).json({ message: 'Almacenes agregados correctamente' });
+  } catch (error) {
+    console.error('Error al acceder al almacen:', error);
+    res.status(500).json({ error: 'Error al acceder al almacen' });
+  }
+});
+
+app.post('/auditoria', async (req, res) => {
+  const auditoria = req.body;
+  // Validación (similar a tu código original)
+  try {
+    const batch = db.batch();
+
+    auditoria.forEach(auditoria => {
+      const docRef = db.collection('Auditoria').doc();
+      batch.set(docRef, auditoria);
+    });
+
+    await batch.commit();
+
+    res.status(201).json({ message: 'auditoria recuperada correctamente' });
+  } catch (error) {
+    console.error('Error al recuperar las auditorías:', error);
+    res.status(500).json({ error: 'Error al recuperar las auditorías' });
+  }
+});
+
+app.post('/inventario', async (req, res) => {
   const components = req.body;
   // Validación (similar a tu código original)
   try {
     const batch = db.batch();
 
-    components.forEach(component => {
-      const docRef = db.collection('Componente').doc();
-      batch.set(docRef, component);
+    inventario.forEach(inventario => {
+      const docRef = db.collection('Inventario').doc();
+      batch.set(docRef, inventario);
     });
 
     await batch.commit();
 
-    res.status(201).json({ message: 'Componentes agregados correctamente' });
+    res.status(201).json({ message: 'Inventario recuperado correctamente' });
   } catch (error) {
-    console.error('Error al agregar los componentes:', error);
-    res.status(500).json({ error: 'Error al agregar los componentes' });
+    console.error('Error al recuperar el inventario:', error);
+    res.status(500).json({ error: 'Error al recuperar el inventario' });
   }
 });
 
 
 exports.app = functions.https.onRequest(app);
+
+app.post('/pedido', async (req, res) => {
+  const pedidos = req.body;
+  // Validación (similar a tu código original)
+  try {
+    const batch = db.batch();
+
+    pedidos.forEach(pedido => {
+      const docRef = db.collection('Pedido').doc();
+      batch.set(docRef, pedido);
+    });
+
+    await batch.commit();
+
+    res.status(201).json({ message: 'Pedidos recuperados correctamente' });
+  } catch (error) {
+    console.error('Error al consultar los pedidos:', error);
+    res.status(500).json({ error: 'Error al consultar los pedidos' });
+  }
+});
+
+app.post('/pedidos-con-componente', async (req, res) => {
+  const pedidosConComponentes = req.body;
+  // Validación (similar a tu código original)
+  try {
+    const batch = db.batch();
+
+    pedidosConComponentes.forEach(component => {
+      const docRef = db.collection('Pedido-Componente').doc();
+      batch.set(docRef, component);
+    });
+
+    await batch.commit();
+
+    res.status(201).json({ message: 'Consulta realizada correctamente' });
+  } catch (error) {
+    console.error('Error al realizar la consulta de los componentes:', error);
+    res.status(500).json({ error: 'Error al realizar la consulta de los componentes' });
+  }
+});
+
+app.post('/proveedor', async (req, res) => {
+  const proveedores = req.body;
+  // Validación (similar a tu código original)
+  try {
+    const batch = db.batch();
+
+    proveedores.forEach(proveedor => {
+      const docRef = db.collection('Proveedor').doc();
+      batch.set(docRef, proveedor);
+    });
+
+    await batch.commit();
+
+    res.status(201).json({ message: 'proveedores recuperados correctamente' });
+  } catch (error) {
+    console.error('Error al recuperar los proveedores:', error);
+    res.status(500).json({ error: 'Error al recuperer los proveedores' });
+  }
+});
+
+app.post('/stock', async (req, res) => {
+  const stockList = req.body;
+  // Validación (similar a tu código original)
+  try {
+    const batch = db.batch();
+
+    stockList.forEach(stockSnapshot => {
+      const docRef = db.collection('Stock').doc();
+      batch.set(docRef, stockSnapshot);
+    });
+
+    await batch.commit();
+
+    res.status(201).json({ message: 'Revisión de stock realizada correctamente' });
+  } catch (error) {
+    console.error('Error al realizar la revisión del stock:', error);
+    res.status(500).json({ error: 'Error al realizar la revisión de stock' });
+  }
+});
+
+app.post('/usuario', async (req, res) => {
+  const usuariosList = req.body;
+  // Validación (similar a tu código original)
+  try {
+    const batch = db.batch();
+
+    usuariosList.forEach(usuariosSnapshot => {
+      const docRef = db.collection('Usuario').doc();
+      batch.set(docRef, usuariosSnapshot);
+    });
+
+    await batch.commit();
+
+    res.status(201).json({ message: 'Usuarios recuperados correctamente' });
+  } catch (error) {
+    console.error('Error al recuperar los usuarios:', error);
+    res.status(500).json({ error: 'Error al recuperar los usuarios' });
+  }
+});
+
+app.delete('/inventarios', async (req, res) => {
+  try{
+    const document = db.collection('Inventario').doc(req.params.id)
+    await document.delete()
+    return res.status(200).json();
+  } catch (error) {
+    return res.status(500).json();
+  }
+});
+
+app.delete('/componentes', async (req, res) => {
+  try{
+    const document = db.collection('Componente').doc(req.params.id)
+    await document.delete()
+    return res.status(200).json();
+  } catch (error) {
+    return res.status(500).json();
+  }
+});
+
+app.delete('/almacen', async (req, res) => {
+  try{
+    const document = db.collection('Almacen').doc(req.params.id)
+    await document.delete()
+    return res.status(200).json();
+  } catch (error) {
+    return res.status(500).json();
+  }
+});
+
+app.delete('/auditorias', async (req, res) => {
+  try{
+    const document = db.collection('Auditoria').doc(req.params.id)
+    await document.delete()
+    return res.status(200).json();
+  } catch (error) {
+    return res.status(500).json();
+  }
+});
+
+app.delete('/pedidos', async (req, res) => {
+  try{
+    const document = db.collection('Pedido').doc(req.params.id)
+    await document.delete()
+    return res.status(200).json();
+  } catch (error) {
+    return res.status(500).json();
+  }
+});
+
+app.delete('/pedidos-con-componente', async (req, res) => {
+  try{
+    const document = db.collection('Pedido').doc(req.params.id)
+    await document.delete()
+    return res.status(200).json();
+  } catch (error) {
+    return res.status(500).json();
+  }
+});
+
+app.delete('/proveedores', async (req, res) => {
+  try{
+    const document = db.collection('Proveedor').doc(req.params.id)
+    await document.delete()
+    return res.status(200).json();
+  } catch (error) {
+    return res.status(500).json();
+  }
+});
+
+app.delete('/stock', async (req, res) => {
+  try{
+    const document = db.collection('Stock').doc(req.params.id)
+    await document.delete()
+    return res.status(200).json();
+  } catch (error) {
+    return res.status(500).json();
+  }
+});
+
+app.delete('/usuarios', async (req, res) => {
+  try{
+    const document = db.collection('Usuario').doc(req.params.id)
+    await document.delete()
+    return res.status(200).json();
+  } catch (error) {
+    return res.status(500).json();
+  }
+});
+
+
